@@ -182,7 +182,8 @@ class MultiHeadedAttention(nn.Module):
 
         # 3) Apply attention dropout and compute context vectors.
         attn = self.softmax(scores)
-        # print(attn)
+        with open('attn', 'a') as fin:
+            fin.writelines(str(attn))
         drop_attn = self.dropout(attn)
         context = unshape(torch.matmul(drop_attn, value))
 

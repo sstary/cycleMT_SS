@@ -143,30 +143,30 @@ class LossComputeBase(nn.Module):
         shard_state = self._make_shard_state(batch, output, range_, attns)
         for shard in shards(model, shard_state, shard_size):
             loss, stats = self._compute_loss(batch, **shard)
-            net = model.cuda()
-            print('loss 11111111111111111111111')
-            for name, parms in net.named_parameters():
-                if name == 'encoder.transformer.1.self_attn.linear_query.bias':
-                    print('-->name:', name, '-->grad_requirs:', parms.requires_grad, \
-                          ' -->grad_value:', parms.grad)
-            parm = {}
-            for name, parameters in net.named_parameters():
-                if name == 'encoder.transformer.1.self_attn.linear_query.bias':
-                    print(name, ':', parameters.size())
-                    parm[name] = parameters
-                    print(parm[name][0])
+            # net = model.cuda()
+            # print('loss 11111111111111111111111')
+            # for name, parms in net.named_parameters():
+            #     if name == 'encoder.transformer.1.self_attn.linear_query.bias':
+            #         print('-->name:', name, '-->grad_requirs:', parms.requires_grad, \
+            #               ' -->grad_value:', parms.grad)
+            # parm = {}
+            # for name, parameters in net.named_parameters():
+            #     if name == 'encoder.transformer.1.self_attn.linear_query.bias':
+            #         print(name, ':', parameters.size())
+            #         parm[name] = parameters
+            #         print(parm[name][0])
             loss.div(float(normalization)).backward(retain_graph=True)
-            print('loss 222222222222222222222222')
-            for name, parms in net.named_parameters():
-                if name == 'encoder.transformer.1.self_attn.linear_query.bias':
-                    print('-->name:', name, '-->grad_requirs:', parms.requires_grad, \
-                          ' -->grad_value:', parms.grad)
-            parm = {}
-            for name, parameters in net.named_parameters():
-                if name == 'encoder.transformer.1.self_attn.linear_query.bias':
-                    print(name, ':', parameters.size())
-                    parm[name] = parameters
-                    print(parm[name][0])
+            # print('loss 222222222222222222222222')
+            # for name, parms in net.named_parameters():
+            #     if name == 'encoder.transformer.1.self_attn.linear_query.bias':
+            #         print('-->name:', name, '-->grad_requirs:', parms.requires_grad, \
+            #               ' -->grad_value:', parms.grad)
+            # parm = {}
+            # for name, parameters in net.named_parameters():
+            #     if name == 'encoder.transformer.1.self_attn.linear_query.bias':
+            #         print(name, ':', parameters.size())
+            #         parm[name] = parameters
+            #         print(parm[name][0])
             batch_stats.update(stats)
         return batch_stats
 
@@ -336,28 +336,28 @@ def shards(model, state, shard_size, eval_only=False):
                                      [v_chunk.grad for v_chunk in v_split]))
         inputs, grads = zip(*variables)
 
-        net = model.cuda()
-        print('loss 3333333333333333333333333333333')
-        for name, parms in net.named_parameters():
-            if name == 'encoder.transformer.1.self_attn.linear_query.bias':
-                print('-->name:', name, '-->grad_requirs:', parms.requires_grad, \
-                      ' -->grad_value:', parms.grad)
-        parm = {}
-        for name, parameters in net.named_parameters():
-            if name == 'encoder.transformer.1.self_attn.linear_query.bias':
-                print(name, ':', parameters.size())
-                parm[name] = parameters
-                print(parm[name][0])
+        # net = model.cuda()
+        # print('loss 3333333333333333333333333333333')
+        # for name, parms in net.named_parameters():
+        #     if name == 'encoder.transformer.1.self_attn.linear_query.bias':
+        #         print('-->name:', name, '-->grad_requirs:', parms.requires_grad, \
+        #               ' -->grad_value:', parms.grad)
+        # parm = {}
+        # for name, parameters in net.named_parameters():
+        #     if name == 'encoder.transformer.1.self_attn.linear_query.bias':
+        #         print(name, ':', parameters.size())
+        #         parm[name] = parameters
+        #         print(parm[name][0])
 
         torch.autograd.backward(inputs, grads)
-        print('loss 4444444444444444444444444444444')
-        for name, parms in net.named_parameters():
-            if name == 'encoder.transformer.1.self_attn.linear_query.bias':
-                print('-->name:', name, '-->grad_requirs:', parms.requires_grad, \
-                      ' -->grad_value:', parms.grad)
-        parm = {}
-        for name, parameters in net.named_parameters():
-            if name == 'encoder.transformer.1.self_attn.linear_query.bias':
-                print(name, ':', parameters.size())
-                parm[name] = parameters
-                print(parm[name][0])
+        # print('loss 4444444444444444444444444444444')
+        # for name, parms in net.named_parameters():
+        #     if name == 'encoder.transformer.1.self_attn.linear_query.bias':
+        #         print('-->name:', name, '-->grad_requirs:', parms.requires_grad, \
+        #               ' -->grad_value:', parms.grad)
+        # parm = {}
+        # for name, parameters in net.named_parameters():
+        #     if name == 'encoder.transformer.1.self_attn.linear_query.bias':
+        #         print(name, ':', parameters.size())
+        #         parm[name] = parameters
+        #         print(parm[name][0])

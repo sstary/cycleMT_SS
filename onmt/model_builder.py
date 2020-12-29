@@ -232,13 +232,13 @@ def build_base_model(model_opt, fields, gpu, checkpoint=None):
                                   fields["tgt"].vocab)
 
     # Load the model states from checkpoint or initialize them.
-
     if checkpoint is not None:
-        for item in list(checkpoint['model']):
-            if 'embeddings' in item:
-                checkpoint['model'].pop(item)
+        # for item in list(checkpoint['model']):
+        #     if 'encoder.transformer.2' not in item:
+        #         if 'encoder.transformer.3' not in item:
+        #             checkpoint['model'].pop(item)
         model.load_state_dict(checkpoint['model'], strict=False)
-        # generator.load_state_dict(checkpoint['generator'], strict=False)
+        generator.load_state_dict(checkpoint['generator'], strict=False)
     else:
         if model_opt.param_init != 0.0:
             for p in model.parameters():
@@ -261,13 +261,13 @@ def build_base_model(model_opt, fields, gpu, checkpoint=None):
                 model_opt.pre_word_vecs_dec, model_opt.fix_word_vecs_dec)
 
     # Add generator to model (this registers it as parameter of model).
+
+    # for name, parms in model.named_parameters():
+    #     if name == 'encoder.transformer.1.self_attn.linear_query.bias':
+    #         print('-->name:', name, '-->parms:', parms)
+
     model.generator = generator
     model.to(device)
-
-    # print("******44444********")
-    # for name, parms in model.named_parameters():
-    #     if 'embeddings' in name:
-    #         print(name, ':', parms.size())
 
     return model
 

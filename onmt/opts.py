@@ -254,7 +254,7 @@ def train_opts(parser):
     """ Training and saving options """
 
     group = parser.add_argument_group('General')
-    group.add_argument('-data', default='data/MIT_mixed_augm/MIT_mixed_augm',
+    group.add_argument('-data', default='data/USPTO-50K/USPTO-50K',
                        help="""Path prefix to the ".train.pt" and
                        ".valid.pt" file path from preprocess.py""")
 
@@ -298,7 +298,7 @@ def train_opts(parser):
                        help="""Init parameters with xavier_uniform.
                        Required for transfomer.""")
 
-    group.add_argument('-train_from', default='experiments/checkpoints/USPTO-50K/USPTO-50K_model_step_500000.pt', type=str,
+    group.add_argument('-train_from', default='experiments/checkpoints/MIT_mixed_augm/MIT_mixed_augm_model_step_500000.pt', type=str,
                        help="""If training from a checkpoint then this is the
                        path to the pretrained model's state_dict.""")
 
@@ -448,7 +448,7 @@ def translate_opts(parser):
     """ Translation / inference options """
     group = parser.add_argument_group('Model')
     group.add_argument('-model', dest='models', metavar='MODEL',
-                       nargs='+', type=str, default=['experiments/checkpoints/MIT_mixed_augm/MIT_mixed_augm_model_step_500000.pt'],
+                       nargs='+', type=str, default=['experiments/checkpoints/USPTO-50K-ft/USPTO-50K-ft_model_step_50000.pt'],
                        help='Path to model .pt file(s). '
                             'Multiple models can be specified, '
                             'for ensemble decoding.')
@@ -457,7 +457,7 @@ def translate_opts(parser):
     group.add_argument('-data_type', default="text",
                        help="Type of the source input. Options: [text|img].")
 
-    group.add_argument('-src', default='data/MIT_mixed_augm/src-test_2.txt',
+    group.add_argument('-src', default='data/USPTO-50K/src-test_2.txt',
                        help="""Source sequence to decode (one line per
                        sequence)""")
     group.add_argument('-src_dir', default="",
