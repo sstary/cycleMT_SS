@@ -145,13 +145,13 @@ def load_test_model(opt, dummy_opt, model_path=None):
     for arg in dummy_opt:
         if arg not in model_opt:
             model_opt.__dict__[arg] = dummy_opt[arg]
-    model = build_base_model(model_opt, fields, use_gpu(opt), checkpoint)
+    model = build_base_model(model_opt, fields, use_gpu(opt), checkpoint, False)
     model.eval()
     model.generator.eval()
     return fields, model, model_opt
 
 
-def build_base_model(model_opt, fields, gpu, checkpoint=None):
+def build_base_model(model_opt, fields, gpu, checkpoint=None, isTrain=True):
     """
     Args:
         model_opt: the option loaded from checkpoint.
@@ -233,12 +233,15 @@ def build_base_model(model_opt, fields, gpu, checkpoint=None):
 
     # Load the model states from checkpoint or initialize them.
     if checkpoint is not None:
-        # for item in list(checkpoint['model']):
-        #     if 'encoder.transformer.2' not in item:
-        #         if 'encoder.transformer.3' not in item:
-        #             checkpoint['model'].pop(item)
-        model.load_state_dict(checkpoint['model'], strict=False)
-        generator.load_state_dict(checkpoint['generator'], strict=False)
+        if isTrain == True:
+            for item in list(checkpoint['model']):
+                if 'encoder.transformer.2' not in item:
+                    if 'encoder.transformer.3' not in item:
+                        checkpoint['model'].pop(item)
+            model.load_state_dict(checkpoint['model'], strict=False)
+        else:
+            model.load_state_dict(checkpoint['model'], strict=False)
+            generator.load_state_dict(checkpoint['generator'], strict=False)
     else:
         if model_opt.param_init != 0.0:
             for p in model.parameters():
