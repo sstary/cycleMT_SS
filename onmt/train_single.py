@@ -114,21 +114,26 @@ def main(opt, device_id):
                     % (j, len(fields[feat].vocab)))
 
     # Build model.
-    model = build_model(model_opt, opt, fields, checkpoint)
-    n_params, enc, dec = _tally_parameters(model)
-    logger.info('encoder: %d' % enc)
-    logger.info('decoder: %d' % dec)
-    logger.info('* number of parameters: %d' % n_params)
+    model_R2P = build_model(model_opt, opt, fields, checkpoint)
+    model_P2R = build_model(model_opt, opt, fields, checkpoint)
+
+    n_params_R2P, enc_R2P, dec_R2P = _tally_parameters(model_R2P)
+    n_params_P2R, enc_P2R, dec_P2R = _tally_parameters(model_P2R)
+    logger.info('encoder: %d' % (enc_R2P + enc_P2R))
+    logger.info('decoder: %d' % (dec_R2P + dec_P2R))
+    logger.info('* number of parameters: %d' % (n_params_R2P + n_params_P2R))
     _check_save_model_path(opt)
 
     # Build optimizer.
-    optim = build_optim(model, opt, checkpoint)
+    optim_R2P = build_optim(model_R2P, opt, checkpoint)
+    optim_P2R = build_optim(model_P2R, opt, checkpoint)
 
     # Build model saver
-    model_saver = build_model_saver(model_opt, opt, model, fields, optim)
+    model_saver_R2P = build_model_saver(model_opt, opt, model_R2P, fields, optim_R2P)
+    model_saver_P2R = build_model_saver(model_opt, opt, model_P2R, fields, optim_P2R)
 
-    trainer = build_trainer(opt, device_id, model, fields,
-                            optim, data_type, model_saver=model_saver)
+    trainer = build_trainer(opt, device_id, (model_R2P, model_P2R), fields,
+                            (optim_R2P, optim_P2R), data_type, model_saver=(model_saver_R2P, model_saver_P2R))
 
     def train_iter_fct(): return build_dataset_iter(
         lazily_load_dataset("train", opt), fields, opt)

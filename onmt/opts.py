@@ -27,7 +27,7 @@ def model_opts(parser):
                        help="""Share the word embeddings between encoder
                        and decoder. Need to use shared dictionary for this
                        option.""")
-    group.add_argument('-position_encoding', action='store_true',
+    group.add_argument('-position_encoding', default=True, action='store_true',
                        help="""Use a sin to mark relative words positions.
                        Necessary for non-RNN style models.
                        """)
@@ -254,7 +254,7 @@ def train_opts(parser):
     """ Training and saving options """
 
     group = parser.add_argument_group('General')
-    group.add_argument('-data', default='data/USPTO-50K/USPTO-50K',
+    group.add_argument('-data', default='data/MIT_mixed_augm/MIT_mixed_augm',
                        help="""Path prefix to the ".train.pt" and
                        ".valid.pt" file path from preprocess.py""")
 
@@ -298,7 +298,7 @@ def train_opts(parser):
                        help="""Init parameters with xavier_uniform.
                        Required for transfomer.""")
 
-    group.add_argument('-train_from', default='experiments/checkpoints/MIT_mixed_augm/MIT_mixed_augm_model_step_500000.pt', type=str,
+    group.add_argument('-train_from', default='', type=str,
                        help="""If training from a checkpoint then this is the
                        path to the pretrained model's state_dict.""")
 
@@ -321,7 +321,7 @@ def train_opts(parser):
 
     # Optimization options
     group = parser.add_argument_group('Optimization- Type')
-    group.add_argument('-batch_size', type=int, default=4096,
+    group.add_argument('-batch_size', type=int, default=32,
                        help='Maximum batch size for training')
     group.add_argument('-batch_type', default='tokens',
                        choices=["sents", "tokens"],

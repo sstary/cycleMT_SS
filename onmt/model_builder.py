@@ -233,7 +233,7 @@ def build_base_model(model_opt, fields, gpu, checkpoint=None, isTrain=True):
 
     # Load the model states from checkpoint or initialize them.
     if checkpoint is not None:
-        if isTrain == True:
+        if isTrain:
             for item in list(checkpoint['model']):
                 if 'encoder.transformer.2' not in item:
                     if 'encoder.transformer.3' not in item:
@@ -267,7 +267,7 @@ def build_base_model(model_opt, fields, gpu, checkpoint=None, isTrain=True):
 
     # for name, parms in model.named_parameters():
     #     if name == 'encoder.transformer.1.self_attn.linear_query.bias':
-    #         print('-->name:', name, '-->parms:', parms)
+    #         print('-->name:', name, '-->parms.size: ', parms.size())
 
     model.generator = generator
     model.to(device)
@@ -280,5 +280,5 @@ def build_model(model_opt, opt, fields, checkpoint):
     logger.info('Building model...')
     model = build_base_model(model_opt, fields,
                              use_gpu(opt), checkpoint)
-    logger.info(model)
+    # logger.info(model)
     return model

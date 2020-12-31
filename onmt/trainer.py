@@ -32,10 +32,14 @@ def build_trainer(opt, device_id, model, fields,
         model_saver(:obj:`onmt.models.ModelSaverBase`): the utility object
             used to save the model
     """
-    train_loss = onmt.utils.loss.build_loss_compute(
-        model, fields["tgt"].vocab, opt)
-    valid_loss = onmt.utils.loss.build_loss_compute(
-        model, fields["tgt"].vocab, opt, train=False)
+    train_loss_R2P = onmt.utils.loss.build_loss_compute(
+        model[0], fields["tgt"].vocab, opt)
+    train_loss_P2R = onmt.utils.loss.build_loss_compute(
+        model[1], fields["tgt"].vocab, opt)
+    valid_loss_R2P = onmt.utils.loss.build_loss_compute(
+        model[0], fields["tgt"].vocab, opt, train=False)
+    valid_loss_P2R = onmt.utils.loss.build_loss_compute(
+        model[1], fields["tgt"].vocab, opt, train=False)
 
     trunc_size = opt.truncated_decoder  # Badly named...
     shard_size = opt.max_generator_batches
@@ -50,7 +54,8 @@ def build_trainer(opt, device_id, model, fields,
     gpu_verbose_level = opt.gpu_verbose_level
 
     report_manager = onmt.utils.build_report_manager(opt)
-    trainer = onmt.Trainer(model, train_loss, valid_loss, optim, trunc_size,
+    trainer = onmt.Trainer(model, (train_loss_R2P, train_loss_P2R), (valid_loss_R2P, valid_loss_P2R),
+                           optim, trunc_size,
                            shard_size, data_type, norm_method,
                            grad_accum_count, n_gpu, gpu_rank,
                            gpu_verbose_level, report_manager,
@@ -88,10 +93,18 @@ class Trainer(object):
                  norm_method="sents", grad_accum_count=1, n_gpu=1, gpu_rank=1,
                  gpu_verbose_level=0, report_manager=None, model_saver=None):
         # Basic attributes.
-        self.model = model
-        self.train_loss = train_loss
-        self.valid_loss = valid_loss
-        self.optim = optim
+        # model Reaction to Product
+        self.model_R2P = model[0]
+        self.train_loss_R2P = train_loss[0]
+        self.valid_loss_R2P = valid_loss[0]
+        self.optim_R2P = optim[0]
+
+        # model Product to Reaction
+        self.model_P2R = model[1]
+        self.train_loss_P2R = train_loss[1]
+        self.valid_loss_P2R = valid_loss[1]
+        self.optim_P2R = optim[1]
+
         self.trunc_size = trunc_size
         self.shard_size = shard_size
         self.data_type = data_type
@@ -101,7 +114,8 @@ class Trainer(object):
         self.gpu_rank = gpu_rank
         self.gpu_verbose_level = gpu_verbose_level
         self.report_manager = report_manager
-        self.model_saver = model_saver
+        self.model_saver_R2P = model_saver[0]
+        self.model_saver_P2R = model_saver[1]
 
         assert grad_accum_count > 0
         if grad_accum_count > 1:
@@ -110,7 +124,8 @@ class Trainer(object):
                    you must disable target sequence truncating."""
 
         # Set model in training mode.
-        self.model.train()
+        self.model_R2P.train()
+        self.model_P2R.train()
 
     def train(self, train_iter_fct, valid_iter_fct, train_steps, valid_steps):
         """
@@ -132,7 +147,8 @@ class Trainer(object):
         """
         logger.info('Start training...')
 
-        step = self.optim._step + 1
+        step = self.optim_R2P._step + 1
+        step = self.optim_P2R._step + 1
         true_batchs = []
         accum = 0
         normalization = 0
@@ -155,7 +171,7 @@ class Trainer(object):
 
                     if self.norm_method == "tokens":
                         num_tokens = batch.tgt[1:].ne(
-                            self.train_loss.padding_idx).sum()
+                            self.train_loss_R2P.padding_idx).sum()
                         # sum of all target's tokens without start-token
                         normalization += num_tokens.item()
                     else:
@@ -179,7 +195,7 @@ class Trainer(object):
 
                         report_stats = self._maybe_report_training(
                             step, train_steps,
-                            self.optim.learning_rate,
+                            self.optim_R2P.learning_rate,
                             report_stats)
 
                         true_batchs = []
@@ -198,7 +214,7 @@ class Trainer(object):
                             if self.gpu_verbose_level > 0:
                                 logger.info('GpuRank %d: report stat step %d'
                                             % (self.gpu_rank, step))
-                            self._report_step(self.optim.learning_rate,
+                            self._report_step(self.optim_R2P.learning_rate,
                                               step, valid_stats=valid_stats)
 
                         if self.gpu_rank == 0:
